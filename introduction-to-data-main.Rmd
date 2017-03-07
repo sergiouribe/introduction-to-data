@@ -1,0 +1,131 @@
+---
+title: "Introducción a los datos"
+output: html_notebook
+---
+# Language of data
+## Inicio
+Primero cargo los paquetes necesarios
+```{r}
+install.packages("openintro")
+library(openintro)
+library(tidyverse)
+```
+Luego cargo los datos
+```{r}
+data(hsb2) # cargar los datos
+```
+Veo la estructura de los datos
+```{r}
+str(hsb2)
+```
+```{r}
+glimpse(hsb2)
+```
+
+### Ejercicio
+
+Load the email50 dataset with the data() function.
+View the structure of this dataset with the str() function. How many observations and variables are there?
+
+## Tipos de variables
+Dos tipos: 
+1. numericos o cuantitativos
+ 1. continuos: se miden
+ 1. discretos: se cuentan
+1. categóricos o cualitativos
+ 1. ordinales: valores finitos dentro de un rango. Tienen un orden
+ 1. nominal: sin orden
+ 
+### Ejercicio
+Use the glimpse() function to view the variables in the email50 dataset. Identify each variable as either numerical or categorical, and further as discrete or continuous (if numerical) or ordinal or not ordinal (if categorical).
+
+Nota: es mejor **str** que **glimpse**
+
+## Clases de datos
+Datos categóricos son usualmente almacenados como **factores** en R, importantes para modelado estadístico. Usados en análisis y subanálisis. 
+
+```{r}
+table(hsb2$schtyp)
+```
+```{r}
+hsb2_public <- hsb2 %>% 
+  filter(schtyp == "public")
+```
+
+Ahora, si hago una tabla: 
+```{r}
+table(hsb2_public$schtyp)
+```
+Veo que sigue apareciendo "private". Esto puede ser un problema luego, así que 
+```{r}
+hsb2_public$schtyp <- droplevels(hsb2_public$schtyp)
+table(hsb2_public$schtyp)
+```
+Ahora si. :)
+
+### Ejercicio
+Create a new dataset called email50_big that is a subset of the original email50 dataset containing only emails with "big" numbers. This information is stored in the number variable.
+Report the dimensions of email50_big using the glimpse() function again. How many emails contain big numbers?
+
+Make a table() of the number variable in the email50_big dataset. Which two levels are unused?
+Apply the droplevels() function to the number variable. Assign the result back to email50_big$number.
+Remake the table() of the number variable in the email50_big dataset. How is this output different from the first?
+
+## Discretize a variable
+```{r}
+mean(hsb2$read)
+(avg_read <- mean(hsb2$read)) # corre y ejecuta el comando con ()
+```
+
+```{r}
+hsb2 <- hsb2 %>% 
+  mutate(read_cat = ifelse(read < avg_read, 
+                           "below average", "at or above average"))
+```
+
+### Ejercicio
+Create a new variable in email50 called number_yn that is "no" if there is no number in the email and "yes" if there is a small or a big number. The ifelse() function may prove useful here.
+Run the code provided to visualize the distribution of the number_yn variable.
+
+```{r}
+# Create number_yn column in email50
+email50 <- email50 %>%
+  mutate(number_yn =ifelse(number == "none", 
+  "no", "yes"))  
+
+# Visualize number_yn
+ggplot(email50, aes(x = number_yn)) +
+  geom_bar()
+```
+
+## Visualizing numerical data
+Uso de gráficos
+### Ventajas de ggplot
+
+Ejemplo
+```{r}
+ggplot(data = hsb2, aes(x = science, y = math)) +
+  geom_point()
+```
+
+```{r}
+ggplot(data = hsb2, aes(x = science, y = math, color = prog)) +
+  geom_point()
+```
+
+### Ejercicio
+Create a scatterplot of number of exclamation points in the email message (exclaim_mess) vs. number of characters (num_char).
+
+Color points by whether or not the email is spam.
+Note that the spam variable is stored as numerical (0/1) but you want to use it as a categorical variable in this plot. To do this, you need to force R to think of it as such with the factor() function.
+Based on the plot, what's the relationship between these variables?
+
+```{r}
+
+# Scatterplot of exclaim_mess vs. num_char
+ggplot(email50, aes(x = num_char, y = exclaim_mess , color = factor(spam))) +
+  geom_point()
+```
+
+
+# Observational studies and experiments
